@@ -18,8 +18,8 @@ class Config:
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.train_reps = [1, 3, 4, 6, 8, 9, 10]
         self.test_reps = [2, 5, 7]
-        self.step_size = 5
-        self.win_size = 20
+        self.step_size = 1
+        self.win_size = 30
         self.init_lr = 0.001
         self.epoch_num = 50
         self.batch_size = 256

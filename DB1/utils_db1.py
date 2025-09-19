@@ -6,6 +6,9 @@
  @File    : utils_db1.py
  @Description: 
 """
+import random
+
+import torch
 import scipy
 import os
 import numpy as np
@@ -15,6 +18,16 @@ from scipy.signal import butter, lfilter, freqz, iirnotch
 from sklearn.preprocessing import StandardScaler, RobustScaler, MinMaxScaler
 
 from config_db1 import config
+
+
+def seed_torch(seed=1029):
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)  # 为了禁止hash随机化，使得实验可复现
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)  # if you are using multi-GPU.
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
 
 
 # db1 tools
@@ -129,6 +142,6 @@ if __name__ == '__main__':
         plt.savefig('DB1_visualization.png', dpi=300)
         plt.show()
 
-    one_e_dict = get_sub_wins(sub_dict=e_dict, win_size=20, step_size=5)
+    one_e_dict = get_sub_wins(sub_dict=e_dict, win_size=30, step_size=1)
     for key, value in one_e_dict.items():
         print(key, len(value))
