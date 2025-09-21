@@ -7,7 +7,7 @@
  @Description: 
 """
 import os
-
+import argparse
 import joblib
 import torch
 import torch.nn as nn
@@ -17,7 +17,8 @@ import pandas as pd
 
 from DB1.Dataset_DB1 import DB1Dataset
 from CNNv1 import CNN1D
-from utils_db1 import get_db1_data, get_train_scaler, get_sub_wins, get_wins
+from models.CNN2D import CNN2D
+from utils_db1 import get_db1_data, get_train_scaler, get_sub_wins, get_wins, seed_torch
 from config_db1 import config
 
 
@@ -45,17 +46,16 @@ def train(sub_num):
         print(f'sub_num: {sub_num}, e_num: {e_num}')
         sub_dict = get_db1_data(sub_num=sub_num, e_num=e_num)
         all_e_data.append(sub_dict)
-        repetitions = get_sub_wins(sub_dict=sub_dict, win_size=config.win_size, step_size=config.step_size)
+        repetitions = get_sub_wins(sub_dict=sub_dict, win_size=args.win_size, step_size=args.step_size)
         all_repetitions.append(repetitions)
 
-    # 保存到本地
-    if not os.path.exists('./db1_scaler_' + str(sub_num) + '.pkl'):
+    if not os.path.exists('./data_db1/db1_scaler_' + str(sub_num) + '.pkl'):
         print('calculate sub_num standard scaler...')
         scaler = get_train_scaler(all_data=all_e_data, train_reps=config.train_reps)
-        joblib.dump(scaler, f'./db1_scaler_{sub_num}.pkl')
+        joblib.dump(scaler, f'./data_db1/db1_scaler_{sub_num}.pkl')
     else:
         print('load sub_num standard scaler...')
-        scaler = joblib.load('./db1_scaler_' + str(sub_num) + '.pkl')
+        scaler = joblib.load('./data_db1/db1_scaler_' + str(sub_num) + '.pkl')
 
     test_emg_wins, test_labels = get_wins(all_repetitions=all_repetitions, repetitions_num=config.test_reps)
     train_emg_wins, train_labels = get_wins(all_repetitions=all_repetitions, repetitions_num=config.train_reps)
@@ -64,11 +64,12 @@ def train(sub_num):
     test_dataset = DB1Dataset(wins_arr=test_emg_wins, labels_arr=test_labels, ss=scaler)
     train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=config.batch_size, shuffle=False)
-    model = CNN1D(in_channels=config.channel_num, num_classes=52)
+    # model = CNN1D(in_channels=config.channel_num, num_classes=52)
+    model = CNN2D(in_channels=10, num_classes=52)
     model.to(config.device)
     loss_function = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=config.init_lr, weight_decay=0.0001)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=50, eta_min=1e-5, last_epoch=-1)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=50, eta_min=config.init_lr * 0.1, last_epoch=-1)
 
     # train
     best_test_acc = 0.
@@ -90,7 +91,7 @@ def train(sub_num):
                 test_accuracy, test_loss = evaluate(model=model, test_loader=test_loader, loss_fn=loss_function)
                 if test_accuracy > best_test_acc:
                     best_test_acc = test_accuracy
-                    torch.save(model, '../save_models_db/best_model.pt')
+                    torch.save(model, f'./runs/best_model_{args.sub_num}.pt')
                     curr_lr = optimizer.state_dict()['param_groups'][0]['lr']
                 print(
                     f'[{epoch + 1}, {step + 1:5d}] train_loss: {running_loss / 10:.3f}, test_accuracy: {test_accuracy:.3f}, '
@@ -105,11 +106,17 @@ def train(sub_num):
         test_losses.append(epoch_test_loss)
         scheduler.step()
         print(f'best_test_acc: {best_test_acc:.3f}')
-    # 将acc和loss list保存为dataframe到本地
+
     epochs_result_df = pd.DataFrame({'train_acc': train_acces, 'train_loss': train_losses, 'test_acc': test_acces, 'test_loss': test_losses})
-    epochs_result_df.to_csv(f'./db1_epochs_result_{sub_num}.csv', index=False)
+    epochs_result_df.to_csv(f'./data_db1/db1_epochs_result_{sub_num}.csv', index=False)
 
 
 if __name__ == '__main__':
-    sub_num = 1
-    train(sub_num)
+    parser = argparse.ArgumentParser(description='inference')
+    parser.add_argument('--sub_num', type=int, default=1)
+    parser.add_argument('--win_size', type=int, default=30)
+    parser.add_argument('--step_size', type=int, default=1)
+    args = parser.parse_args()
+
+    seed_torch(seed=1029)
+    train(args.sub_num)
