@@ -89,7 +89,7 @@ dis = Discriminator().to(device)
 d_optim = torch.optim.Adam(dis.parameters(), lr=0.0001)
 g_optim = torch.optim.Adam(gen.parameters(), lr=0.0001)
 # 损失函数
-loss_fn = torch.nn.BCELoss()
+loss_fn = nn.BCELoss()
 
 
 def gen_img_plot(model, epoch, test_input):
