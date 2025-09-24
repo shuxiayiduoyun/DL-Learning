@@ -7,7 +7,6 @@
 @Author  ：wei liyu
 @Date    ：2025/9/24 10:47 
 '''
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -23,13 +22,10 @@ transform = transforms.Compose([
     transforms.Normalize(0.5, 0.5)  # 通过均值和方差将数据归一化到（-1， 1）之间
 ])
 
-# 下载数据集
 train_ds = torchvision.datasets.MNIST('D:\datasets',
                                     train=True,
                                     transform=transform,
                                     download=False)
-
-# 设置dataloader
 dataloader = torch.utils.data.DataLoader(train_ds, batch_size=64, shuffle=True)
 
 # 返回一个批次的数据
@@ -83,8 +79,8 @@ class Discriminator(nn.Module):
         x = self.main(x)
         return x
 
-
-# 定义设备
+print(torch.cuda.is_available())
+print(torch.cuda.get_device_name())
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 # 初始化模型
 gen = Generator().to(device)
@@ -105,6 +101,7 @@ def gen_img_plot(model, epoch, test_input):
         plt.axis('off')
     # plt.show()
     plt.savefig(f'results/{epoch}.png')
+    plt.close(fig)
 
 
 test_input = torch.randn(16, 100, device=device)
@@ -114,7 +111,7 @@ D_loss = []
 G_loss = []
 
 # 训练循环
-for epoch in range(20):  # 训练20个epoch
+for epoch in range(100):  # 训练20个epoch
     d_epoch_loss = 0  # 初始损失值为0
     g_epoch_loss = 0
     # len(dataloader)返回批次数，len(dataset)返回样本数
@@ -166,7 +163,6 @@ for epoch in range(20):  # 训练20个epoch
         # 将平均loss放入到loss数组中
         D_loss.append(d_epoch_loss.item())
         G_loss.append(g_epoch_loss.item())
-        # 打印当前的epoch
-        print('Epoch:', epoch)
+        print(f'Epoch: {epoch}, D_Loss: {d_epoch_loss.item():.4f}, G_Loss: {g_epoch_loss.item():.4f}')
         # 调用绘图函数
         gen_img_plot(gen, epoch, test_input)
