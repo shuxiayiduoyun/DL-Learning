@@ -136,3 +136,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print(args)
     main()
+
+    """
+    最佳超参数： {'dropout_rate': 0.5, 'dim_cnn1': 16, 'dim_cnn2': 64, 'optimizer': 'RMSprop', 'momentum': 0.06340643399458352, 'lr': 0.0005888558398419007, 'batch_size': 128}
+    最佳验证集准确率： 0.994
+    """
