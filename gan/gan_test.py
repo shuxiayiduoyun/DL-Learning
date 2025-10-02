@@ -25,7 +25,7 @@ transform = transforms.Compose([
 train_ds = torchvision.datasets.MNIST('D:\datasets',
                                     train=True,
                                     transform=transform,
-                                    download=False)
+                                    download=True)
 dataloader = torch.utils.data.DataLoader(train_ds, batch_size=64, shuffle=True)
 
 # 返回一个批次的数据
