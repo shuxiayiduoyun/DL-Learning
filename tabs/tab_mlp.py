@@ -193,6 +193,12 @@ if __name__ == '__main__':
     X_train, X_test, y_train, y_test, preprocessor = preprocess_data(all_data4, 'CLASS4')
     print(f"输入特征维度: {X_train.shape[1]}")
     print(f"训练样本数量: {X_train.shape[0]}")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"设备: {device}")
+    X_train = X_train.to(device)
+    X_test = X_test.to(device)
+    y_train = y_train.to(device)
+    y_test = y_test.to(device)
 
     print("\n创建MLP模型...")
     model = SimpleMLP(
@@ -201,6 +207,8 @@ if __name__ == '__main__':
         dropout_rate=0.2,
         output_dim=1 if y_train.dtype == torch.float32 else 4
     )
+
+    model = model.to(device)
 
     print("\n开始训练模型...")
     train_losses, test_losses = train_model(
@@ -211,7 +219,7 @@ if __name__ == '__main__':
         y_test=y_test,
         epochs=50,
         batch_size=16,
-        lr=0.001
+        lr=0.0005
     )
 
     print("\n评估模型...")
