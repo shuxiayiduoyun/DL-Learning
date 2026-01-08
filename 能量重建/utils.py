@@ -10,10 +10,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import torch
+from torch.utils.data import DataLoader
+from torchvision import transforms, datasets
+from tqdm import tqdm
 
 def filter_outlines(x):
     """
-
     :param x: shape [N, 1, w, h]
     :return: 返回滤除的那些样本，以及对应哪个像素值高
     """
@@ -46,3 +49,35 @@ def plot_probability_density(data, bins=30):
     plt.ylabel('Density')
     # 显示图形
     plt.show()
+
+
+def load_data(paths=[]):
+    X_path = paths[0]
+    theta_path = paths[2]
+    y_path = paths[1]
+
+    theta = np.load(theta_path).astype(np.float32)
+    y = np.load(y_path).astype(np.float32)
+    X = np.load(X_path).astype(np.float32).reshape(-1, 1, 14, 22)
+    return X, y, theta
+
+
+def calculate_mean_std(dataset):
+    """
+    计算数据集的均值和标准差
+    """
+    mean = 0.
+    std = 0.
+    total_images = dataset.shape[0]
+
+    for images in dataset:
+        # images: [channels, height, width]
+        images = images.reshape(images.shape[0], -1)
+        mean += images.mean(1)  # 按像素维度求均值
+        std += images.std(1)  # 按像素维度求标准差
+
+    mean /= total_images
+    std /= total_images
+
+    return mean.tolist(), std.tolist()
+
