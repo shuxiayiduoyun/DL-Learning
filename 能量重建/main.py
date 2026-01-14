@@ -98,7 +98,7 @@ if __name__ == '__main__':
     # 筛选异常样本
     idx_max = filter_outlines(x_data)
     max_rate_df = pd.DataFrame(idx_max, columns=['idx', 'max_rate'])
-    filtered_df = max_rate_df.query('max_rate >= 0.2')
+    filtered_df = max_rate_df.query('max_rate <= 0.2')
     ids, idx_, max_ = filtered_df.index.tolist(), filtered_df['idx'].tolist(), filtered_df['max_rate'].tolist()
     selected_x_data, selected_theta_data, selected_y_data = x_data[ids], theta_data[ids], y_data[ids]
 
@@ -118,7 +118,7 @@ if __name__ == '__main__':
 
     # 3. 划分数据集
     X_tr, X_te, y_tr, y_te, t_tr, t_te = train_test_split(
-        x_data, y_data, theta_data, test_size=0.3, random_state=42
+        selected_x_data, selected_y_data, selected_theta_data, test_size=0.3, random_state=42
     )
     # 保存到本地
     np.savez(r"E:\datasets\dampe\selected_data.npz", X_tr=X_tr, X_te=X_te, y_tr=y_tr, y_te=y_te, t_tr=t_tr, t_te=t_te)

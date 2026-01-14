@@ -21,7 +21,7 @@ if __name__ == '__main__':
     theta = np.load(theta_path).astype(np.float32)
     y = np.load(y_path).astype(np.float32)
     X = np.load(X_path).astype(np.float32).reshape(-1, 1, 14, 22)
-    print(f'X shape: {X.shape}')
+    print(f'所有原始数据 X shape: {X.shape}')
     # 筛选异常样本
     idx_max = filter_outlines(X)
     print(f'idx_max shape: {idx_max.shape}')
@@ -34,7 +34,7 @@ if __name__ == '__main__':
     filtered_df = max_rate_df.query('max_rate >= 0.6')
     print(filtered_df.head())
     ids, idx_, max_ = filtered_df.index.tolist(), filtered_df['idx'].tolist(), filtered_df['max_rate'].tolist()
-    print(f'len ids: {len(ids)}')
+    print(f'筛选后样本数 len ids: {len(ids)}')
 
     random_select_ids = np.random.choice(ids, size=25, replace=False)
     random_x = X[random_select_ids]

@@ -15,6 +15,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms, datasets
 from tqdm import tqdm
 
+
 def filter_outlines(x):
     """
     :param x: shape [N, 1, w, h]
