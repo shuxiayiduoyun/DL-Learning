@@ -84,14 +84,13 @@ def train_model(config):
         for idx, (src, tgt) in enumerate(train_iter):
             src = src.to(config.device)  # [src_len, batch_size]
             tgt = tgt.to(config.device)
-            tgt_input = tgt[:-1, :]  # 解码部分的输入, [tgt_len,batch_size]
+            tgt_input = tgt[:-1, :]  # 解码部分的输入, [tgt_len, batch_size]
             src_mask, tgt_mask, src_padding_mask, tgt_padding_mask = data_loader.create_mask(src, tgt_input, config.device)
             logits = translation_model(
                 src=src,  # Encoder的token序列输入，[src_len,batch_size]
                 tgt=tgt_input,  # Decoder的token序列输入,[tgt_len,batch_size]
                 src_mask=src_mask,  # Encoder的注意力Mask输入，这部分其实对于Encoder来说是没有用的
-                tgt_mask=tgt_mask,
-                # Decoder的注意力Mask输入，用于掩盖当前position之后的position [tgt_len,tgt_len]
+                tgt_mask=tgt_mask,  # Decoder的注意力Mask输入，用于掩盖当前position之后的position [tgt_len,tgt_len]
                 src_key_padding_mask=src_padding_mask,  # 用于mask掉Encoder的Token序列中的padding部分
                 tgt_key_padding_mask=tgt_padding_mask,  # 用于mask掉Decoder的Token序列中的padding部分
                 memory_key_padding_mask=src_padding_mask)  # 用于mask掉Encoder的Token序列中的padding部分
@@ -127,8 +126,7 @@ def evaluate(config, valid_iter, model, data_loader):
             tgt = tgt.to(config.device)
             tgt_input = tgt[:-1, :]  # 解码部分的输入
 
-            src_mask, tgt_mask, src_padding_mask, tgt_padding_mask = \
-                data_loader.create_mask(src, tgt_input, device=config.device)
+            src_mask, tgt_mask, src_padding_mask, tgt_padding_mask = data_loader.create_mask(src, tgt_input, device=config.device)
 
             logits = model(src=src,  # Encoder的token序列输入，
                            tgt=tgt_input,  # Decoder的token序列输入
